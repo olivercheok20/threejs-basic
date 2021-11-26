@@ -18,14 +18,30 @@
 
         var scene = new THREE.Scene();
 
-        var camera = new THREE.PerspectiveCamera(
-            75, // Field of view
-            window.innerWidth / window.innerHeight, // Aspect ratio
-            0.1, // Near plane
-            1000 // Far plane
-        );
+        // scene.add(new THREE.GridHelper(5));
 
-        camera.position.set(0, 0, 20);
+
+        // var camera = new THREE.PerspectiveCamera(
+        //     75, // Field of view
+        //     window.innerWidth / window.innerHeight, // Aspect ratio
+        //     0.1, // Near plane
+        //     1000 // Far plane
+        // );
+
+        width = 30;
+        height = width * (window.innerHeight / window.innerWidth);
+
+        var camera = new THREE.OrthographicCamera(
+            width / -2,
+            width / 2,
+            height / 2,
+            height / -2,
+            1,
+            100
+        )
+
+        camera.position.set(20, 20, 20);
+        camera.lookAt(0, 0, 0);
 
         var renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setClearColor(0xFFD1DC);
@@ -64,7 +80,8 @@
             for (var j = 0; j < 20; j++) {
                 var mesh = new THREE.Mesh(geometry, material);
                 mesh.position.x = i - 10;
-                mesh.position.y = j - 10;
+                mesh.position.y = 0;
+                mesh.position.z = j - 10;
                 scene.add(mesh);
             }
         }
@@ -78,11 +95,11 @@
         // scene.add(light);
 
         var light = new THREE.DirectionalLight(0xFFFFFF, 1);
-        light.position.set(0, 0, 20);
-        light.target.position.set(0, 0, 0);
+        light.position.set(10, 20, 0);
+        // light.target.position.set(10, 0, 0);
         scene.add(light);
 
-        var light = new THREE.AmbientLight(0xAAAAAA);
+        var light = new THREE.AmbientLight(0xFFFFFF, 0.1);
         scene.add(light);
 
         var render = function() {
@@ -110,7 +127,7 @@
             var intersects = raycaster.intersectObjects(scene.children, true);
             for (var i = 0; i < intersects.length; i++) {
                 this.tl = new TimelineMax();
-                this.tl.to(intersects[i].object.position, 0.1, {z: intersects[i].object.position.z - 1})
+                this.tl.to(intersects[i].object.position, 0.1, {y: intersects[i].object.position.y + 1})
             }
         }
 
@@ -123,7 +140,7 @@
                     continue;
                 }
                 this.tl = new TimelineMax();
-                this.tl.to(scene.children[i].position, 0.1, {z: 0})
+                this.tl.to(scene.children[i].position, 0.1, {y: 0})
             }
         }
 
