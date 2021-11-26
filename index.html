@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+
+    <!-- <h1>Hello</h1> -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+
+    <script>
+
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(
+            75, // Field of view
+            window.innerWidth / window.innerHeight, // Aspect ratio
+            0.1, // Near plane
+            1000 // Far plane
+        );
+
+        camera.position.set(0, 0, 20);
+
+        var renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setClearColor(0xFFD1DC);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        document.body.appendChild(renderer.domElement);
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+
+            camera.updateProjectionMatrix();
+        });
+
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+
+        // var geometry = new THREE.SphereGeometry(1, 4, 4);
+        var geometry = new THREE.BoxGeometry(1, 1, 1);
+        var material = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
+        // var mesh = new THREE.Mesh(geometry, material);
+
+        // mesh.position.x = -2;
+        // mesh.position.y = 2;
+        // mesh.position.z = 2;
+
+        // mesh.position.set(0, 0, 0);
+        // mesh.rotation.set(0, 0, 0);
+        // mesh.scale.set(1, 1, 1);
+
+        // scene.add(mesh);
+
+
+
+        for (var i = 0; i < 20; i++) {
+            for (var j = 0; j < 20; j++) {
+                var mesh = new THREE.Mesh(geometry, material);
+                mesh.position.x = i - 10;
+                mesh.position.y = j - 10;
+                scene.add(mesh);
+            }
+        }
+
+        // var light = new THREE.PointLight(0xFFFFFF, 1, 1000);
+        // light.position.set(0, 0, 0);
+        // scene.add(light);
+
+        // var light = new THREE.PointLight(0xFFFFFF, 2, 1000);
+        // light.position.set(10, 0, 25);
+        // scene.add(light);
+
+        var light = new THREE.DirectionalLight(0xFFFFFF, 1);
+        light.position.set(0, 0, 20);
+        light.target.position.set(0, 0, 0);
+        scene.add(light);
+
+        var light = new THREE.AmbientLight(0xAAAAAA);
+        scene.add(light);
+
+        var render = function() {
+            requestAnimationFrame(render);
+
+            // mesh.rotation.x += 0.05;
+            // mesh.rotation.y += 0.05;
+            renderer.render(scene, camera);
+        }
+
+        var drawing = false;
+
+        function onMouseMove(event) {
+            event.preventDefault();
+
+            if (!drawing) {
+                return;
+            }
+
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            var intersects = raycaster.intersectObjects(scene.children, true);
+            for (var i = 0; i < intersects.length; i++) {
+                this.tl = new TimelineMax();
+                this.tl.to(intersects[i].object.position, 0.1, {z: intersects[i].object.position.z - 1})
+            }
+        }
+
+        function onMouseClick(event) {
+            event.preventDefault();
+            console.log(scene.children);
+
+            for (var i = 0; i < scene.children.length; i++) {
+                if (scene.children[i].type != "Mesh") {
+                    continue;
+                }
+                this.tl = new TimelineMax();
+                this.tl.to(scene.children[i].position, 0.1, {z: 0})
+            }
+        }
+
+        render();
+
+
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mousedown', () => {drawing = !drawing});
+        window.addEventListener('mouseup', () => {drawing = !drawing});
+        window.addEventListener('click', onMouseClick);
+
+    </script>
+</body>
+</html>
