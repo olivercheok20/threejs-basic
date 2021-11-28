@@ -1,158 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link rel="stylesheet" href="main.css">
-</head>
-<body>
-
-    <!-- <h1>Hello</h1> -->
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <script src="./node_modules/three/build/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/DragControls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
-
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script> -->
+    
+    
     <script>
+      var scene = new THREE.Scene();
 
-        var scene = new THREE.Scene();
+      // scene.add(new THREE.GridHelper(5));
 
-        // scene.add(new THREE.GridHelper(5));
+      // var camera = new THREE.PerspectiveCamera(
+      //     75, // Field of view
+      //     window.innerWidth / window.innerHeight, // Aspect ratio
+      //     0.1, // Near plane
+      //     1000 // Far plane
+      // );
 
+      width = 30;
+      height = width * (window.innerHeight / window.innerWidth);
 
-        // var camera = new THREE.PerspectiveCamera(
-        //     75, // Field of view
-        //     window.innerWidth / window.innerHeight, // Aspect ratio
-        //     0.1, // Near plane
-        //     1000 // Far plane
-        // );
+      var gravity = 100;
+      var wavespeed = 100;
+      var rows = 10;
+      var cols = 10;
+      var max_height = 10;
 
-        width = 30;
-        height = width * (window.innerHeight / window.innerWidth);
+      var camera = new THREE.OrthographicCamera(
+        width / -2,
+        width / 2,
+        height / 2,
+        height / -2,
+        1,
+        1000
+      );
 
-        var camera = new THREE.OrthographicCamera(
-            width / -2,
-            width / 2,
-            height / 2,
-            height / -2,
-            1,
-            100
-        )
+      camera.position.set(0, 50, 100);
+      camera.lookAt(0, 0, 0);
 
-        camera.position.set(20, 20, 20);
-        camera.lookAt(0, 0, 0);
+      var renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setClearColor(0xffd1dc);
+      renderer.setSize(window.innerWidth, window.innerHeight);
 
-        var renderer = new THREE.WebGLRenderer({antialias: true});
-        renderer.setClearColor(0xFFD1DC);
+      document.body.appendChild(renderer.domElement);
+
+      window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
 
-        document.body.appendChild(renderer.domElement);
+        camera.updateProjectionMatrix();
+      });
 
-        window.addEventListener('resize', () => {
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            camera.aspect = window.innerWidth / window.innerHeight;
+      var raycaster = new THREE.Raycaster();
+      var mouse = new THREE.Vector2();
 
-            camera.updateProjectionMatrix();
-        });
+      // var geometry = new THREE.SphereGeometry(1, 4, 4);
+      var geometry = new THREE.BoxGeometry(3, 100, 1);
+      var material = new THREE.MeshLambertMaterial({ color: 0xffffff });
+      // var mesh = new THREE.Mesh(geometry, material);
 
-        var raycaster = new THREE.Raycaster();
-        var mouse = new THREE.Vector2();
+      // mesh.position.x = -2;
+      // mesh.position.y = 2;
+      // mesh.position.z = 2;
 
-        // var geometry = new THREE.SphereGeometry(1, 4, 4);
-        var geometry = new THREE.BoxGeometry(1, 1, 1);
-        var material = new THREE.MeshLambertMaterial({color: 0xFFFFFF});
-        // var mesh = new THREE.Mesh(geometry, material);
+      // mesh.position.set(0, 0, 0);
+      // mesh.rotation.set(0, 0, 0);
 
-        // mesh.position.x = -2;
-        // mesh.position.y = 2;
-        // mesh.position.z = 2;
+      // scene.add(mesh);
 
-        // mesh.position.set(0, 0, 0);
-        // mesh.rotation.set(0, 0, 0);
-        // mesh.scale.set(1, 1, 1);
+      objects = []      
 
-        // scene.add(mesh);
-
-
-
-        for (var i = 0; i < 20; i++) {
-            for (var j = 0; j < 20; j++) {
-                var mesh = new THREE.Mesh(geometry, material);
-                mesh.position.x = i - 10;
-                mesh.position.y = 0;
-                mesh.position.z = j - 10;
-                scene.add(mesh);
-            }
-        }
-
-        // var light = new THREE.PointLight(0xFFFFFF, 1, 1000);
-        // light.position.set(0, 0, 0);
-        // scene.add(light);
-
-        // var light = new THREE.PointLight(0xFFFFFF, 2, 1000);
-        // light.position.set(10, 0, 25);
-        // scene.add(light);
-
-        var light = new THREE.DirectionalLight(0xFFFFFF, 1);
-        light.position.set(10, 20, 0);
-        // light.target.position.set(10, 0, 0);
-        scene.add(light);
-
-        var light = new THREE.AmbientLight(0xFFFFFF, 0.1);
-        scene.add(light);
-
-        var render = function() {
-            requestAnimationFrame(render);
-
-            // mesh.rotation.x += 0.05;
-            // mesh.rotation.y += 0.05;
-            renderer.render(scene, camera);
-        }
-
-        var drawing = false;
-
-        function onMouseMove(event) {
-            event.preventDefault();
-
-            if (!drawing) {
-                return;
+      for (var i = 0; i < cols; i++) {
+        for (var j = 0; j < rows; j++) {
+          var mesh = new THREE.Mesh(geometry, material);
+          if ((i + j) % 2 == 0) {
+            mesh.position.set(
+              (i - cols / 2 + 0.5) * Math.sqrt(2),
+              0,
+              (j - rows / 2 + 0.5) * 2 * Math.sqrt(2)
+            );
+            mesh.position.y = -50;
+            if (i % 2 == 0) {
+              mesh.rotation.set(0, Math.PI / 4, 0);
+            } else {
+              mesh.rotation.set(0, Math.PI / -4, 0);
             }
 
-            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-
-            var intersects = raycaster.intersectObjects(scene.children, true);
-            for (var i = 0; i < intersects.length; i++) {
-                this.tl = new TimelineMax();
-                this.tl.to(intersects[i].object.position, 0.1, {y: intersects[i].object.position.y + 1})
+            mesh.original = {
+              x: mesh.position.x,
+              y: mesh.position.y,
+              z: mesh.position.z,              
             }
+            
+            scene.add(mesh);
+            objects.push(mesh);
+          }
         }
+      }
 
-        function onMouseClick(event) {
-            event.preventDefault();
-            console.log(scene.children);
 
-            for (var i = 0; i < scene.children.length; i++) {
-                if (scene.children[i].type != "Mesh") {
-                    continue;
-                }
-                this.tl = new TimelineMax();
-                this.tl.to(scene.children[i].position, 0.1, {y: 0})
-            }
+      // var light = new THREE.PointLight(0xffffff, 1, 1000);
+      // light.position.set(0, 0, 0);
+      // scene.add(light);
+
+      // var light = new THREE.PointLight(0xffffff, 2, 1000);
+      // light.position.set(10, 0, 25);
+      // scene.add(light);
+
+      var light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(10, 20, 0);
+      scene.add(light);
+
+      var light = new THREE.AmbientLight(0xffffff, 0.1);
+      scene.add(light);
+
+      var render = function () {
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+      };
+
+      //   function onMouseDown(event) {
+      //     event.preventDefault();
+
+      //     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      //     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+      //     raycaster.setFromCamera(mouse, camera);
+
+      //     var intersects = raycaster.intersectObjects(scene.children, true);
+      //     console.log(intersects[0].object);
+      //   }
+
+      //   document.addEventListener('mousedown', onMouseDown);
+
+
+
+      const dragControls = new THREE.DragControls(objects, camera, renderer.domElement);
+
+      distances = {}
+
+      total_time = 0;
+
+      const distance = (pointOne, pointTwo) => {
+        const dist = Math.sqrt((pointOne.x - pointTwo.x) ** 2 + (pointOne.z - pointTwo.z) ** 2);
+        return dist;
+      }
+
+      const quake = (event) => {
+        var tl = new TimelineMax();
+
+        for (var i = 0; i < objects.length; i++) {
+          if (objects[i] === event.detail.object) {
+            continue;
+          }
+          var start_time = distance(event.detail.object.position, objects[i].position) / wavespeed;
+          tl.to(
+            objects[i].position,
+            event.detail.time,
+            {
+              y: (max_height >= 0 ? Math.min(max_height, event.detail.height) : event.detail.height) - 50,
+              ease: Quad.easeOut
+            },
+            start_time
+          );
+          tl.to(
+            objects[i].position,
+            event.detail.time,
+            {
+              y: -50,
+              ease: Quad.easeIn
+            },
+            start_time + event.detail.time
+          );
         }
+      };
 
-        render();
+      dragControls.addEventListener('drag', (event) => {
+        event.object.position.x = event.object.original.x;
+        event.object.position.y = event.object.position.y;
+        event.object.position.z = event.object.original.z;
+      });
 
+      dragControls.addEventListener('dragend', (event) => {
+        var tl = new TimelineMax();
+        var height = event.object.position.y + 50;
+        var time = Math.sqrt(2 * height / gravity);
+        const details = {
+          object: event.object,
+          height: height,
+          time: time
+        }
+        const thump = new CustomEvent('thump', {detail: details})
+        tl.to(
+          event.object.position, 
+          time, 
+          {
+            y: -50, 
+            ease: Quad.easeIn,
+            onComplete: () => document.dispatchEvent(thump)
+          }
+        );
+      });
 
+      document.addEventListener('thump', quake, false);
 
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mousedown', () => {drawing = !drawing});
-        window.addEventListener('mouseup', () => {drawing = !drawing});
-        window.addEventListener('click', onMouseClick);
-
+      render();
     </script>
-</body>
+  </body>
 </html>

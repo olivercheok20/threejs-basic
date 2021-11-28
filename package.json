@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "three": "^0.135.0",
+    "threejs-controls": "^1.0.6"
+  }
+}
